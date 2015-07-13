@@ -83,5 +83,7 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistView
             ivArtist = (ImageView) itemView.findViewById(R.id.image_individual_artist_thumbnail);
             tvArtistNameName = (TextView) itemView.findViewById(R.id.textview_artist_name);
         }
+
+
     }
 }

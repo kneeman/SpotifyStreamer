@@ -51,6 +51,10 @@ public class MainActivityFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(savedInstanceState != null){
+            mArtists = savedInstanceState.getParcelableArrayList(KEY_ARTISTS);
+        }else
+            mArtists = new ArrayList<ParceableArtist>();
     }
 
     @Override
@@ -60,14 +64,13 @@ public class MainActivityFragment extends Fragment {
         setRetainInstance(true);
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view_search_results_artist);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        if(savedInstanceState != null){
-            mArtists = savedInstanceState.getParcelableArrayList(KEY_ARTISTS);
-        }else
-            mArtists = new ArrayList<ParceableArtist>();
+
         //mRecyclerView.setAdapter(mAdapter);
         RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(getActivity(),
                 LinearLayoutManager.VERTICAL);
         mRecyclerView.addItemDecoration(itemDecoration);
+        mAdapter = new ArtistAdapter(getActivity(),mArtists);
+        mRecyclerView.setAdapter(mAdapter);
         mEditTextArtist = (EditText) rootView.findViewById(R.id.edit_text_artist_search);
         mEditTextArtist.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -145,11 +148,8 @@ public class MainActivityFragment extends Fragment {
             if(artists.size() == 0 && !this.isCancelled()){
                 Toast.makeText(getActivity(), getActivity().getString(R.string.no_artists_found), Toast.LENGTH_LONG).show();
             }else{
-                if(mAdapter != null){
+                if(mAdapter != null) {
                     mAdapter.swapList(mArtists);
-                }else {
-                    mAdapter = new ArtistAdapter(getActivity(),mArtists);
-                    mRecyclerView.setAdapter(mAdapter);
                 }
             }
             //Used in conjunction with the optional TextChangedListener.  Uncomment out if using.
