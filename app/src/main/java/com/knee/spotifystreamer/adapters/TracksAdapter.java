@@ -5,26 +5,26 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.URLUtil;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.knee.spotifystreamer.R;
+import com.knee.spotifystreamer.model.ParceableTrack;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
-
-import kaaes.spotify.webapi.android.models.Track;
 
 /**
  * Created by c_cknee on 6/12/2015.
  */
 public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TracksViewHolder>{
-    private List<Track> tracks;
+    private List<ParceableTrack> tracks;
     private Context context;
 
-    public TracksAdapter(Context pContext,List<Track>pTracks){
-            this.tracks=pTracks;
+    public TracksAdapter(Context pContext,List<ParceableTrack> pTracks){
+            this.tracks= pTracks;
             this.context=pContext;
     }
 
@@ -38,12 +38,13 @@ public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TracksView
 
     @Override
     public void onBindViewHolder(TracksViewHolder tracksViewHolder, int i){
-        final Track thisTrack = tracks.get(i);
-        tracksViewHolder.tvTrackArtist.setText(thisTrack.artists.get(0).name);
-        tracksViewHolder.tvTrackName.setText(thisTrack.name);
-            if(thisTrack.album.images.size()>0){
+        final ParceableTrack thisTrack = tracks.get(i);
+        tracksViewHolder.tvTrackArtist.setText(thisTrack.getArtistName());
+        tracksViewHolder.tvTrackName.setText(thisTrack.getName());
+            String urlString = thisTrack.getImageUrl();
+            if(urlString != null && URLUtil.isValidUrl(urlString)){
                 Picasso.with(context)
-                .load(thisTrack.album.images.get(0).url)
+                .load(urlString)
                 .placeholder(R.drawable.image_loading)
                 .resize(200, 200)
                 .into(tracksViewHolder.ivTrack);
@@ -56,10 +57,15 @@ public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TracksView
         tracksViewHolder.vgContainer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(context, thisTrack.name, Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, thisTrack.getName(), Toast.LENGTH_LONG).show();
                 }
             });
 
+    }
+
+    public void swapList(List<ParceableTrack> pTracks) {
+        this.tracks = pTracks;
+        notifyDataSetChanged();
     }
 
 

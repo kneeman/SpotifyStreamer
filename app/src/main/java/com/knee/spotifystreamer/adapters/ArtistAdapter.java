@@ -8,10 +8,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.knee.spotifystreamer.R;
 import com.knee.spotifystreamer.TopTracksActivity;
 import com.knee.spotifystreamer.model.ParceableArtist;
+import com.knee.spotifystreamer.utils.Utils;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -54,8 +56,12 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistView
         artistViewHolder.vgContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = TopTracksActivity.makeIntent(context, thisArtist);
-                context.startActivity(intent);
+                if(Utils.isNetworkConnected(context)) {
+                    Intent intent = TopTracksActivity.makeIntent(context, thisArtist);
+                    context.startActivity(intent);
+                }else{
+                    Toast.makeText(context, context.getString(R.string.network_unavailable), Toast.LENGTH_LONG).show();
+                }
             }
         });
 

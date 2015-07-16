@@ -22,6 +22,7 @@ import com.knee.spotifystreamer.adapters.ArtistAdapter;
 import com.knee.spotifystreamer.model.ParceableArtist;
 import com.knee.spotifystreamer.utils.DividerItemDecoration;
 import com.knee.spotifystreamer.utils.SpotifyServiceSingleton;
+import com.knee.spotifystreamer.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,14 +78,19 @@ public class MainActivityFragment extends Fragment {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 boolean handled = false;
                 if (actionId == EditorInfo.IME_ACTION_SEND) {
-                    progressDialog = ProgressDialog.show(getActivity(),
-                            getString(R.string.please_wait_title),
-                            getString(R.string.please_wait_artist_message));
-                    SpotifyCallTask spotifyCallTask = new SpotifyCallTask();
-                    spotifyCallTask.execute(v.getText().toString().trim());
-                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                    handled = true;
+                    Context currentContext = (MainActivityFragment.this.getActivity());
+                    if(Utils.isNetworkConnected(currentContext)) {
+                        progressDialog = ProgressDialog.show(getActivity(),
+                                getString(R.string.please_wait_title),
+                                getString(R.string.please_wait_artist_message));
+                        SpotifyCallTask spotifyCallTask = new SpotifyCallTask();
+                        spotifyCallTask.execute(v.getText().toString().trim());
+                        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                        handled = true;
+                    }else{
+                        Toast.makeText(currentContext, currentContext.getString(R.string.network_unavailable), Toast.LENGTH_LONG).show();
+                    }
                 }
                 return handled;
             }

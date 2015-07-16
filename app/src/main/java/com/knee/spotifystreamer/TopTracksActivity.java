@@ -3,6 +3,7 @@ package com.knee.spotifystreamer;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,12 +12,19 @@ import com.knee.spotifystreamer.model.ParceableArtist;
 
 
 public class TopTracksActivity extends ActionBarActivity {
-    public static final String ARTIST_ID_KEY = "keyArtist";
+    public static final String ARTIST_ID_KEY = "keyArtistId";
+    private static final String ARTIST_NAME_KEY = "keyArtistName" ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_top_tracks);
+
+        String artistName = getIntent().getExtras().getString(ARTIST_NAME_KEY);
+        if(artistName != null && artistName.length() > 0) {
+            ActionBar actionBar = getSupportActionBar();
+            actionBar.setSubtitle(artistName);
+        }
     }
 
 
@@ -42,6 +50,7 @@ public class TopTracksActivity extends ActionBarActivity {
     public static Intent makeIntent(Context pContext, ParceableArtist pArtist){
         Intent intent = new Intent(pContext, TopTracksActivity.class);
         intent.putExtra(ARTIST_ID_KEY, pArtist.getArtistId());
+        intent.putExtra(ARTIST_NAME_KEY, pArtist.getArtistName());
         return intent;
     }
 }

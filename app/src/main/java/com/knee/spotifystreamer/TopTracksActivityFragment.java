@@ -3,6 +3,7 @@ package com.knee.spotifystreamer;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,9 +13,11 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.knee.spotifystreamer.adapters.TracksAdapter;
+import com.knee.spotifystreamer.model.ParceableTrack;
 import com.knee.spotifystreamer.utils.DividerItemDecoration;
 import com.knee.spotifystreamer.utils.SpotifyServiceSingleton;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -31,8 +34,11 @@ public class TopTracksActivityFragment extends Fragment {
 
     private String artistId;
     private RecyclerView mRecyclerView;
-    private final String COUNTRY_MAP_KEY = "country";
+    private TracksAdapter mAdapter;
+    private final String COUNTRY_MAP_KEY = "country", KEY_TRACKS = "keyTracks";
     private ProgressDialog progressDialog;
+    private List<ParceableTrack> mTracks;
+
 
     public TopTracksActivityFragment() {
     }
@@ -41,6 +47,10 @@ public class TopTracksActivityFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         artistId = getActivity().getIntent().getExtras().getString(TopTracksActivity.ARTIST_ID_KEY);
+        if(savedInstanceState != null){
+            mTracks = savedInstanceState.getParcelableArrayList(KEY_TRACKS);
+        }else
+            mTracks = new ArrayList<ParceableTrack>();
     }
 
     @Override
@@ -52,12 +62,23 @@ public class TopTracksActivityFragment extends Fragment {
         RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(getActivity(),
                 LinearLayoutManager.VERTICAL);
         mRecyclerView.addItemDecoration(itemDecoration);
-        progressDialog = ProgressDialog.show(getActivity(),
-                getString(R.string.please_wait_title),
-                getString(R.string.please_wait_tracks));
-        TopTracksTask topTracksTask = new TopTracksTask();
-        topTracksTask.execute(artistId);
+        mAdapter = new TracksAdapter(getActivity(), mTracks);
+        mRecyclerView.setAdapter(mAdapter);
+        if(savedInstanceState == null) {
+            progressDialog = ProgressDialog.show(getActivity(),
+                    getString(R.string.please_wait_title),
+                    getString(R.string.please_wait_tracks));
+            TopTracksTask topTracksTask = new TopTracksTask();
+            topTracksTask.execute(artistId);
+        }
         return rootView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(KEY_TRACKS, (ArrayList<? extends Parcelable>) mTracks);
+
     }
 
     public static TopTracksActivityFragment newInstance(String pArtistId) {
@@ -85,8 +106,16 @@ public class TopTracksActivityFragment extends Fragment {
             if(tracks.size() == 0 && !this.isCancelled()){
                 Toast.makeText(getActivity(), getActivity().getString(R.string.no_tracks_found), Toast.LENGTH_LONG).show();
             }else{
-                TracksAdapter mAdapter = new TracksAdapter(getActivity(), pTracks.tracks);
-                mRecyclerView.setAdapter(mAdapter);
+                if(mTracks != null && mTracks.size() > 0) {
+                    mTracks.clear();
+                }
+                for(Track thisTrack: tracks){
+                    ParceableTrack pa = new ParceableTrack(thisTrack);
+                    mTracks.add(pa);
+                }
+                if(mAdapter != null) {
+                    mAdapter.swapList(mTracks);
+                }
             }
         }
     }
