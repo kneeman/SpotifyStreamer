@@ -1,7 +1,6 @@
 package com.knee.spotifystreamer;
 
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
@@ -13,15 +12,14 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.knee.spotifystreamer.adapters.TracksAdapter;
+import com.knee.spotifystreamer.bus.BusProvider;
 import com.knee.spotifystreamer.model.ParceableTrack;
+import com.knee.spotifystreamer.tasks.TopTracksTask;
 import com.knee.spotifystreamer.utils.DividerItemDecoration;
-import com.knee.spotifystreamer.utils.SpotifyServiceSingleton;
+import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
@@ -32,10 +30,12 @@ import kaaes.spotify.webapi.android.models.Tracks;
  */
 public class TopTracksActivityFragment extends Fragment {
 
+    public static final String FRAGMENT_TAG = "topTracksActivityFragmentTag";
+    private static final String TAG = TopTracksActivityFragment.class.getSimpleName();
     private String artistId;
     private RecyclerView mRecyclerView;
     private TracksAdapter mAdapter;
-    private final String COUNTRY_MAP_KEY = "country", KEY_TRACKS = "keyTracks";
+    private final String KEY_TRACKS = "keyTracks";
     private ProgressDialog progressDialog;
     private List<ParceableTrack> mTracks;
 
@@ -46,7 +46,11 @@ public class TopTracksActivityFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        artistId = getActivity().getIntent().getExtras().getString(TopTracksActivity.ARTIST_ID_KEY);
+        if(getActivity().getIntent().hasExtra(TopTracksActivity.ARTIST_ID_KEY)){
+            artistId = getActivity().getIntent().getExtras().getString(TopTracksActivity.ARTIST_ID_KEY);
+        }else {
+            artistId = getArguments().getString(TopTracksActivity.ARTIST_ID_KEY);
+        }
         if(savedInstanceState != null){
             mTracks = savedInstanceState.getParcelableArrayList(KEY_TRACKS);
         }else
@@ -89,33 +93,34 @@ public class TopTracksActivityFragment extends Fragment {
         return topTracksActivityFragment;
     }
 
-    public class TopTracksTask extends AsyncTask<String, Void, Tracks> {
+    @Override
+    public void onResume() {
+        super.onResume();
+        BusProvider.getInstance().register(this);
+    }
 
-        @Override
-        protected Tracks doInBackground(String... params) {
-            Map<String, Object> map = new HashMap<>();
-            map.put(COUNTRY_MAP_KEY, Locale.getDefault().getCountry());
-            Tracks results = SpotifyServiceSingleton.getInstance().getArtistTopTrack(params[0], map);
-            return results;
-        }
+    @Override
+    public void onPause() {
+        super.onPause();
+        BusProvider.getInstance().unregister(this);
+    }
 
-        @Override
-        protected void onPostExecute(Tracks pTracks) {
-            progressDialog.dismiss();
-            List<Track> tracks = pTracks.tracks;
-            if(tracks.size() == 0 && !this.isCancelled()){
-                Toast.makeText(getActivity(), getActivity().getString(R.string.no_tracks_found), Toast.LENGTH_LONG).show();
-            }else{
-                if(mTracks != null && mTracks.size() > 0) {
-                    mTracks.clear();
-                }
-                for(Track thisTrack: tracks){
-                    ParceableTrack pa = new ParceableTrack(thisTrack);
-                    mTracks.add(pa);
-                }
-                if(mAdapter != null) {
-                    mAdapter.swapList(mTracks);
-                }
+    @Subscribe
+    public void handleSpotifyNetworkResult(Tracks pTracks) {
+        progressDialog.dismiss();
+        List<Track> tracks = pTracks.tracks;
+        if (tracks.size() == 0) {
+            Toast.makeText(getActivity(), getActivity().getString(R.string.no_tracks_found), Toast.LENGTH_LONG).show();
+        } else {
+            if (mTracks != null && mTracks.size() > 0) {
+                mTracks.clear();
+            }
+            for (Track thisTrack : tracks) {
+                ParceableTrack pa = new ParceableTrack(thisTrack);
+                mTracks.add(pa);
+            }
+            if (mAdapter != null) {
+                mAdapter.swapList(mTracks);
             }
         }
     }

@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.knee.spotifystreamer.R;
+import com.knee.spotifystreamer.bus.BusProvider;
 import com.knee.spotifystreamer.model.ParceableTrack;
 import com.squareup.picasso.Picasso;
 
@@ -57,6 +58,7 @@ public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TracksView
         tracksViewHolder.vgContainer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    BusProvider.getInstance().post(thisTrack);
                     Toast.makeText(context, thisTrack.getName(), Toast.LENGTH_LONG).show();
                 }
             });

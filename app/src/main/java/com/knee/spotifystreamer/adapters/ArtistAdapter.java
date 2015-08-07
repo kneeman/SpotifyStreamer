@@ -1,7 +1,6 @@
 package com.knee.spotifystreamer.adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,7 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.knee.spotifystreamer.R;
-import com.knee.spotifystreamer.TopTracksActivity;
+import com.knee.spotifystreamer.bus.BusProvider;
 import com.knee.spotifystreamer.model.ParceableArtist;
 import com.knee.spotifystreamer.utils.Utils;
 import com.squareup.picasso.Picasso;
@@ -24,6 +23,7 @@ import java.util.List;
 public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistViewHolder>{
     private List<ParceableArtist> artists;
     private Context context;
+    private int selectedItem;
 
     public ArtistAdapter(Context  pContext, List<ParceableArtist> pArtists){
         this.artists = pArtists;
@@ -40,6 +40,7 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistView
     @Override
     public void onBindViewHolder(ArtistViewHolder artistViewHolder, int i) {
         final ParceableArtist thisArtist = artists.get(i);
+        final int location = i;
         artistViewHolder.tvArtistNameName.setText(thisArtist.getArtistName());
         if(thisArtist.getArtistImageUrls().size() > 0) {
             Picasso.with(context)
@@ -57,14 +58,22 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistView
             @Override
             public void onClick(View v) {
                 if(Utils.isNetworkConnected(context)) {
-                    Intent intent = TopTracksActivity.makeIntent(context, thisArtist);
-                    context.startActivity(intent);
+                    BusProvider.getInstance().post(thisArtist);
                 }else{
                     Toast.makeText(context, context.getString(R.string.network_unavailable), Toast.LENGTH_LONG).show();
                 }
             }
         });
 
+    }
+
+    public int getSelectedItem() {
+        return selectedItem;
+    }
+
+    public void setSelectedItem(int selectedItem) {
+        this.selectedItem = selectedItem;
+        notifyDataSetChanged();
     }
 
     public void swapList(List<ParceableArtist> pArtists) {

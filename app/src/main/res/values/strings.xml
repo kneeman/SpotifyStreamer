@@ -11,4 +11,11 @@
     <string name="please_wait_artist_message">Retrieving Artist...</string>
     <string name="please_wait_tracks">Retrieving tracks...</string>
     <string name="network_unavailable">No current networks detected</string>
+    <string name="cont_desc_notification_icon">Notification Icon</string>
+    <string name="cont_desc_play_pause">Play or Pause</string>
+    <string name="cont_desc_fast_forward">Fast Forward</string>
+    <string name="cont_desc_rewind">Rewind</string>
+    <string name="cont_desc_stop">Stop</string>
+    <string name="preparing_audio_message">Preparing Audio File…</string>
+    <string name="preparing_audio_title">Streaming</string>
 </resources>

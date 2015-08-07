@@ -2,7 +2,6 @@ package com.knee.spotifystreamer;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
@@ -19,10 +18,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.knee.spotifystreamer.adapters.ArtistAdapter;
+import com.knee.spotifystreamer.bus.BusProvider;
 import com.knee.spotifystreamer.model.ParceableArtist;
+import com.knee.spotifystreamer.tasks.SpotifyCallTask;
 import com.knee.spotifystreamer.utils.DividerItemDecoration;
-import com.knee.spotifystreamer.utils.SpotifyServiceSingleton;
 import com.knee.spotifystreamer.utils.Utils;
+import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,19 +35,18 @@ import kaaes.spotify.webapi.android.models.ArtistsPager;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment {
+public class SearchArtistFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
     private ArtistAdapter mAdapter;
     private EditText mEditTextArtist;
-    private static final String TAG = MainActivity.class.getSimpleName();
-    private SpotifyCallTask spotifyCallTask;
+    private static final String TAG = SearchArtistActivity.class.getSimpleName();
     private ProgressDialog progressDialog;
     private List<ParceableArtist> mArtists;
     private static final String KEY_ARTISTS = "keyArtists";
 
 
-    public MainActivityFragment() {
+    public SearchArtistFragment() {
     }
 
     @Override
@@ -61,7 +61,7 @@ public class MainActivityFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_search_artist, container, false);
         setRetainInstance(true);
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view_search_results_artist);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -78,7 +78,7 @@ public class MainActivityFragment extends Fragment {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 boolean handled = false;
                 if (actionId == EditorInfo.IME_ACTION_SEND) {
-                    Context currentContext = (MainActivityFragment.this.getActivity());
+                    Context currentContext = (SearchArtistFragment.this.getActivity());
                     if(Utils.isNetworkConnected(currentContext)) {
                         progressDialog = ProgressDialog.show(getActivity(),
                                 getString(R.string.please_wait_title),
@@ -132,34 +132,37 @@ public class MainActivityFragment extends Fragment {
 
     }
 
-    public class SpotifyCallTask extends AsyncTask<String, Void, ArtistsPager>{
+    @Override
+    public void onResume() {
+        super.onResume();
+        BusProvider.getInstance().register(this);
+    }
 
-        @Override
-        protected ArtistsPager doInBackground(String... params) {
-            ArtistsPager results = SpotifyServiceSingleton.getInstance().searchArtists(params[0]);
-            return results;
-        }
+    @Override
+    public void onPause() {
+        super.onPause();
+        BusProvider.getInstance().unregister(this);
+    }
 
-        @Override
-        protected void onPostExecute(ArtistsPager artistsPager) {
-            List<Artist> artists = artistsPager.artists.items;
-            if(mArtists != null && mArtists.size() > 0) {
-                mArtists.clear();
-            }
-            for(Artist thisArtist: artists){
-                ParceableArtist pa = new ParceableArtist(thisArtist);
-                mArtists.add(pa);
-            }
-            progressDialog.dismiss();
-            if(artists.size() == 0 && !this.isCancelled()){
-                Toast.makeText(getActivity(), getActivity().getString(R.string.no_artists_found), Toast.LENGTH_LONG).show();
-            }else{
-                if(mAdapter != null) {
-                    mAdapter.swapList(mArtists);
-                }
-            }
-            //Used in conjunction with the optional TextChangedListener.  Uncomment out if using.
-            //spotifyCallTask = null;
+    @Subscribe
+    public void handleSpotifyNetworkResult(ArtistsPager artistsPager){
+        List<Artist> artists = artistsPager.artists.items;
+        if(mArtists != null && mArtists.size() > 0) {
+            mArtists.clear();
         }
+        for(Artist thisArtist: artists){
+            ParceableArtist pa = new ParceableArtist(thisArtist);
+            mArtists.add(pa);
+        }
+        progressDialog.dismiss();
+        if(artists.size() == 0){
+            Toast.makeText(getActivity(), getActivity().getString(R.string.no_artists_found), Toast.LENGTH_LONG).show();
+        }else{
+            if(mAdapter != null) {
+                mAdapter.swapList(mArtists);
+            }
+        }
+        //Used in conjunction with the optional TextChangedListener.  Uncomment out if using.
+        //spotifyCallTask = null;
     }
 }

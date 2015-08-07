@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+	<ImageView
+		android:id="@+id/notification_icon"
+		android:contentDescription="@string/cont_desc_notification_icon"
+		android:layout_width="@dimen/notification_expanded_height"
+		android:layout_height="@dimen/notification_expanded_height"
+		android:scaleType="centerCrop"
+		android:layout_alignParentLeft="true"
+		android:layout_alignParentStart="true"
+		android:layout_alignParentBottom="true"
+		android:src="@drawable/icon"/>
+	<LinearLayout
+		android:id="@+id/buttons_row"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_toRightOf="@id/notification_icon"
+		android:layout_toEndOf="@id/notification_icon"
+		android:orientation="horizontal">
+		<ImageButton
+			android:id="@+id/notification_rewind"
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			android:layout_height="@dimen/notification_button_height"
+			android:scaleType="fitCenter"
+			android:contentDescription="@string/cont_desc_rewind"
+			android:src="@drawable/ic_rewind" />
+		<ImageButton
+			android:id="@+id/notification_stop"
+			android:padding="20dp"
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			android:layout_height="@dimen/notification_button_height"
+			android:contentDescription="@string/cont_desc_stop"
+			android:scaleType="fitCenter"
+			android:src="@drawable/media_shape" />
+		<ImageButton
+			android:id="@+id/notification_play_pause"
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			android:layout_height="@dimen/notification_button_height"
+			android:contentDescription="@string/cont_desc_fast_forward"
+			android:scaleType="fitCenter" />
+		<ImageButton
+			android:id="@+id/notification_fast_forward"
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			android:layout_height="@dimen/notification_button_height"
+			android:contentDescription="@string/cont_desc_fast_forward"
+			android:scaleType="fitCenter"
+			android:src="@drawable/ic_fast_forward"/>
+	</LinearLayout>
+	<TextView
+	    android:id="@+id/notification_textview"
+	    android:maxLines="1"
+	    android:ellipsize="marquee"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="@string/app_name"
+		android:textColor="@android:color/white"
+		android:textSize="@dimen/notification_text_size"
+		android:textStyle="bold"
+		android:layout_toRightOf="@+id/notification_icon"
+		android:layout_toEndOf="@id/notification_icon"
+		android:layout_marginBottom="10dp"
+		android:gravity="center_horizontal"
+		android:layout_above="@+id/buttons_row"/>
+
+</RelativeLayout>
