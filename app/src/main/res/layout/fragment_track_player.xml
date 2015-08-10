@@ -9,40 +9,42 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"/>
-    <EditText
+    <TextView
         android:id="@+id/track_group_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:textAppearanceMedium"
         tools:text="Group Name"/>
-    <EditText
+    <TextView
         android:id="@+id/track_album_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:textAppearanceMedium"
         tools:text="Track Album Name"/>
     <ImageView
+        android:id="@+id/track_album_image"
         android:layout_width="250dp"
         android:layout_height="250dp"
         android:adjustViewBounds="true"
         android:textAppearance="?android:textAppearanceMedium"
         tools:src="@drawable/image_loading"/>
-    <EditText
+    <TextView
         android:id="@+id/track_track_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:textAppearanceMedium"
         tools:text="Track Track Name"/>
     <SeekBar
+        android:id="@+id/track_seek_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"/>
     <LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal">
-    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+    <TextView
         android:id="@+id/track_left_track_time"
         android:layout_marginLeft="20dp"
         android:layout_width="wrap_content"
@@ -54,7 +56,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"/>
-    <EditText
+    <TextView
         android:id="@+id/track_right_track_time"
         android:layout_marginRight="20dp"
         android:layout_width="wrap_content"
@@ -70,13 +72,13 @@
         android:orientation="horizontal"
         android:layout_marginBottom="10dp">
         <ImageButton
-            android:id="@+id/previous_button"
+            android:id="@+id/track_previous_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@android:drawable/ic_media_previous"
             android:tint="@android:color/black"/>
         <ImageButton
-            android:id="@+id/play_pause_button"
+            android:id="@+id/track_play_pause_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
@@ -84,7 +86,7 @@
             android:tint="@android:color/black"
             android:src="@android:drawable/ic_media_pause"/>
         <ImageButton
-            android:id="@+id/next_button"
+            android:id="@+id/track_next_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:tint="@android:color/black"
