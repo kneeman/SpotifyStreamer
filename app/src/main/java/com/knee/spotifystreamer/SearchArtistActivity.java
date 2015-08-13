@@ -5,8 +5,8 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.widget.Toast;
 
+import com.knee.spotifystreamer.model.TopTracksState;
 import com.knee.spotifystreamer.model.ParceableArtist;
-import com.knee.spotifystreamer.model.ParceableTrack;
 import com.knee.spotifystreamer.utils.Utils;
 import com.squareup.otto.Subscribe;
 
@@ -31,7 +31,7 @@ public class SearchArtistActivity extends ParentActivity {
             if(mTwoPane){
                 FragmentManager fm = getSupportFragmentManager();
                 fm.beginTransaction()
-                    .replace(R.id.fragment_top_tracks, TopTracksActivityFragment.newInstance(pArtist.getArtistId()), "fragment_top_tracks")
+                    .replace(R.id.fragment_top_tracks, TopTracksFragment.newInstance(pArtist.getArtistId()), "fragment_top_tracks")
                     .commit();
             }else {
                 Intent intent = TopTracksActivity.makeIntent(this, pArtist);
@@ -44,5 +44,5 @@ public class SearchArtistActivity extends ParentActivity {
 
     @Subscribe
     //Below method cannot be moved to super class, limitation of Otto
-    public void handleTrackSelected(ParceableTrack pTrack){ showDialog(pTrack);}
+    public void handleTrackSelected(TopTracksState pTrack){ showDialog(pTrack);}
 }

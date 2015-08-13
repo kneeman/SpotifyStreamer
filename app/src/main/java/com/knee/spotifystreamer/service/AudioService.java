@@ -292,4 +292,8 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     public interface AudioStatusListener{
         public void sendStatusUpdate(AudioStatus playing);
     }
+
+    public interface OnServiceConnectedListener{
+        public void onAudioServiceConnected(Intent musicServiceIntent);
+    }
 }

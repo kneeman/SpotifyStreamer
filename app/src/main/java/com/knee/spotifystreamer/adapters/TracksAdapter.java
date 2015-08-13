@@ -12,19 +12,22 @@ import android.widget.Toast;
 
 import com.knee.spotifystreamer.R;
 import com.knee.spotifystreamer.bus.BusProvider;
-import com.knee.spotifystreamer.model.ParceableTrack;
+import com.knee.spotifystreamer.model.TopTracksState;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
+
+import kaaes.spotify.webapi.android.models.Track;
 
 /**
  * Created by c_cknee on 6/12/2015.
  */
 public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TracksViewHolder>{
-    private List<ParceableTrack> tracks;
+    //private List<ParceableTrack> tracks;
+    private List<Track> tracks;
     private Context context;
 
-    public TracksAdapter(Context pContext,List<ParceableTrack> pTracks){
+    public TracksAdapter(Context pContext,List<Track> pTracks){
             this.tracks= pTracks;
             this.context=pContext;
     }
@@ -38,11 +41,11 @@ public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TracksView
     }
 
     @Override
-    public void onBindViewHolder(TracksViewHolder tracksViewHolder, int i){
-        final ParceableTrack thisTrack = tracks.get(i);
-        tracksViewHolder.tvTrackArtist.setText(thisTrack.getArtistName());
-        tracksViewHolder.tvTrackName.setText(thisTrack.getName());
-            String urlString = thisTrack.getImageUrl();
+    public void onBindViewHolder(TracksViewHolder tracksViewHolder, final int i){
+        final Track thisTrack = tracks.get(i);
+        tracksViewHolder.tvTrackArtist.setText(thisTrack.artists.get(0).name);
+        tracksViewHolder.tvTrackName.setText(thisTrack.name);
+            String urlString = thisTrack.album.images.get(thisTrack.album.images.size() - 1).url;
             if(urlString != null && URLUtil.isValidUrl(urlString)){
                 Picasso.with(context)
                 .load(urlString)
@@ -58,14 +61,19 @@ public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TracksView
         tracksViewHolder.vgContainer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    BusProvider.getInstance().post(thisTrack);
-                    Toast.makeText(context, thisTrack.getName(), Toast.LENGTH_LONG).show();
+                    BusProvider.getInstance().post(new TopTracksState(i, tracks));
+                    Toast.makeText(context, thisTrack.name, Toast.LENGTH_LONG).show();
                 }
-            });
+        });
 
     }
 
-    public void swapList(List<ParceableTrack> pTracks) {
+//    public void swapList(List<ParceableTrack> pTracks) {
+//        this.tracks = pTracks;
+//        notifyDataSetChanged();
+//    }
+
+    public void swapList(List<Track> pTracks) {
         this.tracks = pTracks;
         notifyDataSetChanged();
     }

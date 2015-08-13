@@ -9,7 +9,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.knee.spotifystreamer.bus.BusProvider;
-import com.knee.spotifystreamer.model.ParceableTrack;
+import com.knee.spotifystreamer.model.TopTracksState;
 import com.knee.spotifystreamer.utils.Utils;
 
 /**
@@ -54,10 +54,10 @@ public class ParentActivity extends ActionBarActivity {
         BusProvider.getInstance().unregister(this);
     }
 
-    protected void showDialog(ParceableTrack pTrack) {
+    protected void showDialog(TopTracksState pTrack) {
         if(Utils.isNetworkConnected(this)) {
             FragmentManager fragmentManager = getSupportFragmentManager();
-            PlayerDialogFragment newFragment = PlayerDialogFragment.newInstance(mTwoPane, "fake");
+            PlayerDialogFragment newFragment = PlayerDialogFragment.newInstance(pTrack);
             if (mTwoPane) {
                 newFragment.show(fragmentManager, "dialog");
             } else {
@@ -66,7 +66,7 @@ public class ParentActivity extends ActionBarActivity {
                 transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 // To make it fullscreen, use the 'content' root view as the container
                 // for the fragment, which is always the root view for the activity
-                transaction.add(android.R.id.content, newFragment, "fragmentPlayerDialogFragment")
+                transaction.replace(android.R.id.content, newFragment, "fragmentPlayerDialogFragment")
                 .addToBackStack(null)
                 .commit();
             }

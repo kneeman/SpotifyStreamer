@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -28,6 +29,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".SearchArtistActivity" />
         </activity>
+        <service android:name="com.knee.spotifystreamer.service.AudioService" />
     </application>
 
 </manifest>
