@@ -18,4 +18,6 @@
     <string name="cont_desc_stop">Stop</string>
     <string name="preparing_audio_message">Preparing Audio File…</string>
     <string name="preparing_audio_title">Streaming</string>
+    <string name="cont_desc_previous">Previous</string>
+    <string name="cont_desc_next">Next</string>
 </resources>

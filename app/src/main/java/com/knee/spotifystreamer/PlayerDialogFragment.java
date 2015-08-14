@@ -35,9 +35,8 @@ import kaaes.spotify.webapi.android.models.Track;
  */
 public class PlayerDialogFragment extends DialogFragment{
 
-    private static final String KEY_TOP_TRACKS_SELECTED = "keyTopTracksSelected" ;
     private TopTracksState topTracksState;
-    private static final String KEY_TOP_TRACKS_STATE = "keyTopTracksState";
+    public static final String KEY_TOP_TRACKS_STATE = "keyTopTracksState";
     private TextView mArtistName, mAlbumName, mTrackName, mLeftTrackTime, mRightTrackTime;
     private ImageView mAlbumImage;
     private ImageButton mPreviousTrackButton, mNextTrackButton, mPlayPauseButton;
@@ -69,8 +68,8 @@ public class PlayerDialogFragment extends DialogFragment{
         populateControls();
         musicServiceIntent = new Intent(getActivity(), AudioService.class);
         musicServiceIntent.setAction(AudioService.ACTION_SETUP);
-        musicServiceIntent.putExtra(AudioService.,
-                topTracksState.getTracks().get(topTracksState.getSelectedTrack()).preview_url);
+        musicServiceIntent.putExtra(KEY_TOP_TRACKS_STATE,
+                gson.toJson(topTracksState));
         getActivity().bindService(musicServiceIntent, mConnection, Context.BIND_ABOVE_CLIENT);
         getActivity().startService(musicServiceIntent);
         return view;

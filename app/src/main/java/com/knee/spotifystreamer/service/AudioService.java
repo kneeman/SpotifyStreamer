@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Build;
@@ -16,6 +17,7 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.google.gson.Gson;
+import com.knee.spotifystreamer.PlayerDialogFragment;
 import com.knee.spotifystreamer.R;
 import com.knee.spotifystreamer.bus.AudioControlsDisplayMessage;
 import com.knee.spotifystreamer.bus.BusProvider;
@@ -25,12 +27,13 @@ import com.knee.spotifystreamer.model.TopTracksState;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
+import kaaes.spotify.webapi.android.models.Track;
+
 /**
  * Created by me for a work project in March 2015.  This will either stream or play a downloaded file.
  */
 public class AudioService extends Service implements MediaPlayer.OnPreparedListener {
 
-    private static final java.lang.String KEY_PASSED_TOP_TRACKS_STATE = "keyTopTracksState";
     @SuppressWarnings("unused")
     private final String TAG = "AudioService";
 
@@ -40,6 +43,8 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     public static final String ACTION_NOTIFICATION_FAST_FORWARD = "action_notification_fast_forward";
     public static final String ACTION_NOTIFICATION_REWIND = "action_notification_rewind";
     public static final String ACTION_NOTIFICATION_STOP = "action_notification_stop";
+    public static final String ACTION_NOTIFICATION_NEXT = "action_notification_next";
+    public static final String ACTION_NOTIFICATION_PREVIOUS = "action_notification_previous";
     public static final String AUDIO_FILE_LOCATION = "audio_file_location";
     public static final String NOTIFICATION_SEARCH_VALUE = "_notification_"; //Used in handleIntent to determine if intent was triggered by notification
     private boolean mIsPlaying = false;
@@ -55,6 +60,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     private final IBinder mBinder = new LocalBinder();
     private AudioStatusListener mListener;
     private TopTracksState topTracksState;
+    private Track thisTrack;
 
     @Override
     public void onCreate() {
@@ -66,8 +72,9 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
         super.onStartCommand(intent, flags, startId);
         intentHolder = intent;
         if(intent.getAction().equalsIgnoreCase(ACTION_SETUP)){
-            String passedTopTrackStateString = intent.getExtras().getString(KEY_PASSED_TOP_TRACKS_STATE);
+            String passedTopTrackStateString = intent.getExtras().getString(PlayerDialogFragment.KEY_TOP_TRACKS_STATE);
             topTracksState = new Gson().fromJson(passedTopTrackStateString, TopTracksState.class);
+            setTrack(topTracksState.getSelectedTrack());
             createPlayer();
             prepareData();
         }else {
@@ -80,7 +87,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
 
     private void prepareData() {
         try {
-            mPlayer.setDataSource(topTracksState.getTracks().get(topTracksState.getSelectedTrack()).preview_url);
+            mPlayer.setDataSource(thisTrack.preview_url);
             mPlayer.setOnPreparedListener(this);
             mPlayer.prepareAsync();
             dialogMessage = new DialogMessage(getString(R.string.preparing_audio_message),
@@ -142,6 +149,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     private void handleIntent( Intent intent ) {
+        boolean fromNotification = intent.getAction().contains(NOTIFICATION_SEARCH_VALUE);
         switch(intent.getAction()){
             case ACTION_SETUP:
             case ACTION_PLAY_PAUSE:
@@ -225,7 +233,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
         if(currentPosition == 0){
             mPlayer.seekTo(0);
         }else {
-            topTracksState.setSelectedTrack(currentPosition - 1);
+            setTrack(currentPosition - 1);
             prepareData();
             //TODO Have to handle next step as intentHolder will be null.
         }
@@ -252,8 +260,8 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public String getTrackName(){
-        if(topTracksState != null){
-            return topTracksState.getTracks().get(topTracksState.getSelectedTrack()).name;
+        if(thisTrack != null){
+            return thisTrack.name;
         }else
             return null;
     }
@@ -261,7 +269,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     private void showNotification( boolean isPlaying ) {
         Notification notification = new Notification.Builder(getApplicationContext())
                 .setSmallIcon(R.drawable.icon)
-                .setAutoCancel( true )
+                .setAutoCancel(true)
                 .setContentTitle( getString( R.string.app_name ) )
                 .setPriority(Notification.PRIORITY_MAX)
                 .build();
@@ -277,8 +285,15 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
         manager.notify( NOTIFICATION_ID, notification );
     }
 
+    private void setTrack(int i){
+        topTracksState.setSelectedTrack(i);
+        thisTrack = topTracksState.getTracks().get(i);
+    }
+
     private RemoteViews getExpandedView( boolean isPlaying ) {
         RemoteViews customView = new RemoteViews(this.getPackageName(), R.layout.notification);
+        String thumbNailUri = thisTrack.album.images.get(thisTrack.album.images.size() - 1).url;
+        customView.setImageViewUri(R.id.notification_icon, Uri.parse(thumbNailUri));
         customView.setTextViewText(R.id.notification_textview, getTrackName());
         if( isPlaying )
             customView.setImageViewResource( R.id.notification_play_pause, R.drawable.ic_pause );
@@ -302,6 +317,14 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
         intent.setAction( ACTION_NOTIFICATION_REWIND );
         pendingIntent = PendingIntent.getService( getApplicationContext(), 1, intent, 0 );
         customView.setOnClickPendingIntent( R.id.notification_rewind, pendingIntent );
+
+        intent.setAction( ACTION_NOTIFICATION_NEXT);
+        pendingIntent = PendingIntent.getService( getApplicationContext(), 1, intent, 0 );
+        customView.setOnClickPendingIntent( R.id.notification_next, pendingIntent );
+
+        intent.setAction( ACTION_NOTIFICATION_PREVIOUS);
+        pendingIntent = PendingIntent.getService( getApplicationContext(), 1, intent, 0 );
+        customView.setOnClickPendingIntent( R.id.notification_previous, pendingIntent );
 
         return customView;
     }
