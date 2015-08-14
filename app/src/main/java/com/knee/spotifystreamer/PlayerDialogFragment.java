@@ -68,8 +68,8 @@ public class PlayerDialogFragment extends DialogFragment{
         }
         populateControls();
         musicServiceIntent = new Intent(getActivity(), AudioService.class);
-        musicServiceIntent.setAction(AudioService.ACTION_PLAY_PAUSE);
-        musicServiceIntent.putExtra(AudioService.AUDIO_FILE_LOCATION,
+        musicServiceIntent.setAction(AudioService.ACTION_SETUP);
+        musicServiceIntent.putExtra(AudioService.,
                 topTracksState.getTracks().get(topTracksState.getSelectedTrack()).preview_url);
         getActivity().bindService(musicServiceIntent, mConnection, Context.BIND_ABOVE_CLIENT);
         getActivity().startService(musicServiceIntent);
