@@ -79,13 +79,27 @@
             android:src="@android:drawable/ic_media_previous"
             android:tint="@android:color/black"/>
         <ImageButton
+            android:id="@+id/track_rewind_button"
+            android:layout_width="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_media_rew"
+            android:tint="@android:color/black"/>
+        <ImageButton
             android:id="@+id/track_play_pause_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:tint="@android:color/black"
             android:src="@android:drawable/ic_media_pause"/>
+        <ImageButton
+            android:id="@+id/track_fastforward_button"
+            android:layout_width="wrap_content"
+            android:layout_marginRight="10dp"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_media_ff"
+            android:tint="@android:color/black"/>
         <ImageButton
             android:id="@+id/track_next_button"
             android:layout_width="wrap_content"

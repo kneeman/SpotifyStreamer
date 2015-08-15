@@ -165,6 +165,11 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
             case ACTION_NOTIFICATION_STOP:
                 stop();
                 break;
+            case ACTION_NOTIFICATION_NEXT:
+                break;
+            case ACTION_NOTIFICATION_PREVIOUS:
+                break;
+
         }
 //        if( intent != null && intent.getAction() != null ) {
 //            String actionPassed = intent.getAction();
@@ -193,6 +198,8 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
 //            }
 //        }
     }
+
+
 
     public void playPause(){
         if(!mIsPlaying){
