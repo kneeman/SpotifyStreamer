@@ -39,13 +39,14 @@ public class PlayerDialogFragment extends DialogFragment{
     public static final String KEY_TOP_TRACKS_STATE = "keyTopTracksState";
     private TextView mArtistName, mAlbumName, mTrackName, mLeftTrackTime, mRightTrackTime;
     private ImageView mAlbumImage;
-    private ImageButton mPreviousTrackButton, mNextTrackButton, mPlayPauseButton;
+    private ImageButton mPreviousTrackButton, mNextTrackButton, mPlayPauseButton, mFastForwardButton, mRewindButton;
     private SeekBar mSeekBar;
     private Gson gson;
     private WeakReference<AudioService> mService;
     private boolean mBound = false;
     private AudioService.OnServiceConnectedListener mServiceListener;
     private Intent musicServiceIntent;
+    private View fullPlayerView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -72,6 +73,7 @@ public class PlayerDialogFragment extends DialogFragment{
                 gson.toJson(topTracksState));
         getActivity().bindService(musicServiceIntent, mConnection, Context.BIND_ABOVE_CLIENT);
         getActivity().startService(musicServiceIntent);
+        fullPlayerView = view;
         return view;
     }
 
@@ -110,7 +112,10 @@ public class PlayerDialogFragment extends DialogFragment{
         mPreviousTrackButton = (ImageButton) view.findViewById(R.id.track_previous_button);
         mNextTrackButton = (ImageButton) view.findViewById(R.id.track_next_button);
         mPlayPauseButton = (ImageButton) view.findViewById(R.id.track_play_pause_button);
+        mFastForwardButton = (ImageButton) view.findViewById(R.id.track_fastforward_button);
+        mRewindButton = (ImageButton) view.findViewById(R.id.track_rewind_button);
         mSeekBar = (SeekBar) view.findViewById(R.id.track_seek_bar);
+
     }
 
     private void attachButtonListeners(){
@@ -118,11 +123,30 @@ public class PlayerDialogFragment extends DialogFragment{
             @Override
             public void onClick(View v) {
                 mService.get().playPause();
-                if(mService.get().isPlaying()){
+                if(!mService.get().isPlaying()){
                     mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
                 }else{
                     mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
                 }
+            }
+        });
+        mPreviousTrackButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mService.get().playPrevious();
+            }
+        });
+        mFastForwardButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mService.get().skipForward();
+            }
+        });
+
+        mRewindButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mService.get().skipBack();
             }
         });
     }
@@ -140,12 +164,15 @@ public class PlayerDialogFragment extends DialogFragment{
         String formattedDuration = String.format("%d:%d",
                 TimeUnit.MILLISECONDS.toMinutes(duration),
                 TimeUnit.MILLISECONDS.toSeconds(duration) -
-                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration)));
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration)));
         mRightTrackTime.setText(formattedDuration);
-        String urlString = thisTrack.album.images.get(0).url;
-        if(urlString != null && URLUtil.isValidUrl(urlString)){
+        populateImage(thisTrack.album.images.get(0).url);
+    }
+
+    private void populateImage(String pUrlString){
+        if(pUrlString != null && URLUtil.isValidUrl(pUrlString)){
             Picasso.with(getActivity())
-                    .load(urlString)
+                    .load(pUrlString)
                     .placeholder(R.drawable.image_loading)
                     .into(mAlbumImage);
         }else{
@@ -154,7 +181,6 @@ public class PlayerDialogFragment extends DialogFragment{
                     .into(mAlbumImage);
         }
     }
-
 
     protected void handleAudioUpdate(AudioStatus passedStatus) {
         if (passedStatus.equals(AudioStatus.CHANGED)){
@@ -183,6 +209,12 @@ public class PlayerDialogFragment extends DialogFragment{
 //
 //    }
 
+    private void handleTrackChanged(int newTrack) {
+        topTracksState.setSelectedTrack(newTrack);
+        //fullPlayerView.invalidate();
+        populateControls();
+    }
+
     private ServiceConnection mConnection = new ServiceConnection() {
 
         @Override
@@ -196,13 +228,18 @@ public class PlayerDialogFragment extends DialogFragment{
                 public void sendStatusUpdate(AudioService.AudioStatus status) {
                     PlayerDialogFragment.this.handleAudioUpdate(status);
                 }
+
+                @Override
+                public void trackChanged(int newTrack) {
+                    PlayerDialogFragment.this.handleTrackChanged(newTrack);
+                }
+
             });
             mBound = true;
             attachButtonListeners();
             //mServiceListener.onAudioServiceConnected(musicServiceIntent);
             musicServiceIntent = null;
         }
-
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mService = null;

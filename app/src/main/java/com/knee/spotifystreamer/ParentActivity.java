@@ -6,6 +6,7 @@ import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.knee.spotifystreamer.bus.BusProvider;
@@ -18,6 +19,9 @@ import com.knee.spotifystreamer.utils.Utils;
 public class ParentActivity extends ActionBarActivity {
 
     protected boolean mTwoPane;
+    public static final String KEY_SHARED_PREFS = "keySharedPrefs";
+    public static final String KEY_COUNTRY_MAP = "country";
+    private Spinner countrySpinner;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -36,7 +40,10 @@ public class ParentActivity extends ActionBarActivity {
             case android.R.id.home:
                 NavUtils.navigateUpFromSameTask(this);
                 return true;
-            case R.id.action_settings:
+            case R.id.action_country_codes:
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                DialogCountryCodesFragment newFragment = DialogCountryCodesFragment.newInstance();
+                newFragment.show(fragmentManager, "fragment_country_code");
                 return true;
         }
         return super.onOptionsItemSelected(item);

@@ -80,7 +80,7 @@ public class TopTracksFragment extends Fragment {
             progressDialog = ProgressDialog.show(getActivity(),
                     getString(R.string.please_wait_title),
                     getString(R.string.please_wait_tracks));
-            TopTracksTask topTracksTask = new TopTracksTask();
+            TopTracksTask topTracksTask = new TopTracksTask(getActivity());
             topTracksTask.execute(artistId);
         }
         return rootView;

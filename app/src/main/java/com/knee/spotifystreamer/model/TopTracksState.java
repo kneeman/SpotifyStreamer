@@ -10,10 +10,12 @@ import kaaes.spotify.webapi.android.models.Track;
 public class TopTracksState {
     private int selectedTrack;
     private List<Track> tracks;
+    private boolean currentlyPlaying;
 
     public TopTracksState(int pInt, List<Track> pList){
         this.selectedTrack = pInt;
         this.tracks = pList;
+        this.currentlyPlaying = false;
     }
 
     public int getSelectedTrack() {
@@ -28,4 +30,11 @@ public class TopTracksState {
         return tracks;
     }
 
+    public boolean isCurrentlyPlaying() {
+        return currentlyPlaying;
+    }
+
+    public void setCurrentlyPlaying(boolean currentlyPlaying) {
+        this.currentlyPlaying = currentlyPlaying;
+    }
 }

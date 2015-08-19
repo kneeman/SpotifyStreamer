@@ -2,6 +2,7 @@
     <string name="app_name">Spotify Streamer</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="action_country_code">Country Code</string>
     <string name="hint_artist_search">Search Artist...</string>
     <string name="no_artists_found">No Artists Found</string>
     <string name="title_activity_top_tracks">Top 10 Tracks</string>
@@ -20,4 +21,6 @@
     <string name="preparing_audio_title">Streaming</string>
     <string name="cont_desc_previous">Previous</string>
     <string name="cont_desc_next">Next</string>
+    <string name="enter_country_code">Select Country Code:</string>
+    <string name="confirm_country_code_changed">Country code has been changed to:</string>
 </resources>

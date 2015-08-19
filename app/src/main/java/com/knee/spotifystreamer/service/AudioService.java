@@ -103,7 +103,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     private void createPlayer() {
         mPlayer = new MediaPlayer();
         wifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE))
-            .createWifiLock(WifiManager.WIFI_MODE_FULL, "spotifyStreamerLock");
+                .createWifiLock(WifiManager.WIFI_MODE_FULL, "spotifyStreamerLock");
         wifiLock.acquire();
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         //mPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
@@ -121,15 +121,21 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
 
     @Override
     public void onDestroy() {
+        haltPlayback();
+        manager.cancelAll();
+        mListener = null;
+        stopForeground(true);
+    }
 
-        if (null != mPlayer) {
-            if(mPlayer.isPlaying())
+    private void haltPlayback(){
+        if (null != mPlayer){
+            if (mPlayer.isPlaying()){
                 mPlayer.stop();
+            }
+            mPlayer.setOnPreparedListener(null);
             mPlayer.reset();
             mPlayer.release();
-            manager.cancelAll();
-            mListener = null;
-            stopForeground(true);
+            mPlayer = null;
         }
     }
 
@@ -137,7 +143,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     public void onPrepared(MediaPlayer mp) {
         mPlayer = mp;
         handleIntent(intentHolder);
-        intentHolder = null;
+        //intentHolder = null;
         if (dialogMessage != null){
             dialogMessage.setDialogAction(DialogMessage.DialogAction.STOP);
             BusProvider.getInstance().post(dialogMessage);
@@ -202,13 +208,12 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
 
 
     public void playPause(){
-        if(!mIsPlaying){
+        if(!mPlayer.isPlaying()){
             mPlayer.start();
         }else{
             mPlayer.pause();
         }
-        mIsPlaying = !mIsPlaying;
-        showNotification(mIsPlaying);
+        showNotification(mPlayer.isPlaying());
     }
     public void skipBack() {
         int currentPosition = mPlayer.getCurrentPosition();
@@ -240,14 +245,18 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
         if(currentPosition == 0){
             mPlayer.seekTo(0);
         }else {
-            setTrack(currentPosition - 1);
-            prepareData();
+            moveTracks(currentPosition - 1);
             //TODO Have to handle next step as intentHolder will be null.
         }
     }
 
     public void playNext(){
-        mPlayer.seekTo(mPlayer.getDuration());
+        int currentPosition = topTracksState.getSelectedTrack();
+        if(currentPosition >= (topTracksState.getTracks().size() - 1)) {
+            mPlayer.seekTo(mPlayer.getDuration());
+        }else{
+            moveTracks(currentPosition + 1);
+        }
     }
 
     public int getPosition(){
@@ -295,6 +304,19 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     private void setTrack(int i){
         topTracksState.setSelectedTrack(i);
         thisTrack = topTracksState.getTracks().get(i);
+    }
+
+    public int getCurrentTrack(){
+        return topTracksState.getSelectedTrack();
+    }
+
+    private void moveTracks(int toTrack){
+        topTracksState.setCurrentlyPlaying(true);
+        setTrack(toTrack);
+        haltPlayback();
+        createPlayer();
+        prepareData();
+        mListener.trackChanged(toTrack);
     }
 
     private RemoteViews getExpandedView( boolean isPlaying ) {
@@ -354,6 +376,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
 
     public interface AudioStatusListener{
         public void sendStatusUpdate(AudioStatus playing);
+        public void trackChanged(int newTrack);
     }
 
     public interface OnServiceConnectedListener{

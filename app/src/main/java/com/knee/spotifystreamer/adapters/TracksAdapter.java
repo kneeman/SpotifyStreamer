@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.webkit.URLUtil;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.knee.spotifystreamer.R;
 import com.knee.spotifystreamer.bus.BusProvider;
@@ -62,7 +61,6 @@ public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TracksView
                 @Override
                 public void onClick(View v) {
                     BusProvider.getInstance().post(new TopTracksState(i, tracks));
-                    Toast.makeText(context, thisTrack.name, Toast.LENGTH_LONG).show();
                 }
         });
 
