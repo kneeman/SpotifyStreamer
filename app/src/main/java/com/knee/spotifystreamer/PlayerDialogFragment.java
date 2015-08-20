@@ -138,11 +138,6 @@ public class PlayerDialogFragment extends DialogFragment{
             @Override
             public void onClick(View v) {
                 mService.get().playPause();
-                if (!mService.get().isPlaying()) {
-                    mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
-                } else {
-                    mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
-                }
             }
         });
         mPreviousTrackButton.setOnClickListener(new View.OnClickListener() {
@@ -187,7 +182,7 @@ public class PlayerDialogFragment extends DialogFragment{
     private void setSeekbar(){
         if(mService != null && mService.get() != null){
             mSeekBar.setMax(mService.get().getDuration());
-            seekbarUpdateHandler.postDelayed(run, 1000);
+            seekbarUpdateHandler.postDelayed(run, 100);
         }
     }
 
@@ -207,16 +202,18 @@ public class PlayerDialogFragment extends DialogFragment{
     protected void handleAudioUpdate(AudioStatus passedStatus) {
         if (passedStatus.equals(AudioStatus.CHANGED)){
             updateAudioControls();
-        }else{
-            updateAudioPlayPause();
+        }else if(passedStatus.equals(AudioStatus.PLAYING) || passedStatus.equals(AudioStatus.PAUSED)){
+            updateAudioPlayPause(passedStatus);
         }
     }
 
-    private void updateAudioPlayPause() {
-//        if(mediaController != null && mService != null && mService.get() != null){
-//            fauxIsPlaying = true;
-//            mediaController.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
-//        }
+    private void updateAudioPlayPause(AudioStatus passedStatus) {
+        if (passedStatus.equals(AudioStatus.PLAYING)) {
+            mPlayPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+            setSeekbar();
+        } else {
+            mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
+        }
 
     }
     private void updateAudioControls() {
@@ -245,7 +242,6 @@ public class PlayerDialogFragment extends DialogFragment{
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             LocalBinder binder = (LocalBinder) service;
             mService = binder.getService();
-            //setSeekbar();
             binder.setListener(new AudioService.AudioStatusListener() {
                 @Override
                 public void sendStatusUpdate(AudioService.AudioStatus status) {

@@ -213,8 +213,10 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     public void playPause(){
         if(!mPlayer.isPlaying()){
             mPlayer.start();
+            mListener.sendStatusUpdate(AudioStatus.PLAYING);
         }else{
             mPlayer.pause();
+            mListener.sendStatusUpdate(AudioStatus.PAUSED);
         }
         showNotification(mPlayer.isPlaying());
     }
