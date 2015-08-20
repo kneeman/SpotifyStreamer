@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
@@ -47,6 +48,13 @@ public class PlayerDialogFragment extends DialogFragment{
     private AudioService.OnServiceConnectedListener mServiceListener;
     private Intent musicServiceIntent;
     private View fullPlayerView;
+    private Handler seekbarUpdateHandler = new Handler();
+    private Runnable run = new Runnable() {
+        @Override
+        public void run() {
+            updateSeeker();
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -102,6 +110,13 @@ public class PlayerDialogFragment extends DialogFragment{
         outState.putString(KEY_TOP_TRACKS_STATE, gson.toJson(topTracksState));
     }
 
+    private void updateSeeker(){
+        if(mService.get() != null) {
+            mSeekBar.setProgress(mService.get().getPosition());
+            seekbarUpdateHandler.postDelayed(run, 1000);
+        }
+    }
+
     private void bindControls(View view) {
         mArtistName = (TextView) view.findViewById(R.id.track_group_name);
         mAlbumName =  (TextView) view.findViewById(R.id.track_album_name);
@@ -123,9 +138,9 @@ public class PlayerDialogFragment extends DialogFragment{
             @Override
             public void onClick(View v) {
                 mService.get().playPause();
-                if(!mService.get().isPlaying()){
+                if (!mService.get().isPlaying()) {
                     mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
-                }else{
+                } else {
                     mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
                 }
             }
@@ -167,6 +182,13 @@ public class PlayerDialogFragment extends DialogFragment{
                         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration)));
         mRightTrackTime.setText(formattedDuration);
         populateImage(thisTrack.album.images.get(0).url);
+    }
+
+    private void setSeekbar(){
+        if(mService != null && mService.get() != null){
+            mSeekBar.setMax(mService.get().getDuration());
+            seekbarUpdateHandler.postDelayed(run, 1000);
+        }
     }
 
     private void populateImage(String pUrlString){
@@ -223,6 +245,7 @@ public class PlayerDialogFragment extends DialogFragment{
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             LocalBinder binder = (LocalBinder) service;
             mService = binder.getService();
+            //setSeekbar();
             binder.setListener(new AudioService.AudioStatusListener() {
                 @Override
                 public void sendStatusUpdate(AudioService.AudioStatus status) {

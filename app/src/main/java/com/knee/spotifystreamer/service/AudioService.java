@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Build;
@@ -23,6 +22,7 @@ import com.knee.spotifystreamer.bus.AudioControlsDisplayMessage;
 import com.knee.spotifystreamer.bus.BusProvider;
 import com.knee.spotifystreamer.bus.DialogMessage;
 import com.knee.spotifystreamer.model.TopTracksState;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -61,6 +61,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     private AudioStatusListener mListener;
     private TopTracksState topTracksState;
     private Track thisTrack;
+    private Notification notification;
 
     @Override
     public void onCreate() {
@@ -172,8 +173,10 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
                 stop();
                 break;
             case ACTION_NOTIFICATION_NEXT:
+                playNext();
                 break;
             case ACTION_NOTIFICATION_PREVIOUS:
+                playPrevious();
                 break;
 
         }
@@ -283,7 +286,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     private void showNotification( boolean isPlaying ) {
-        Notification notification = new Notification.Builder(getApplicationContext())
+        notification = new Notification.Builder(getApplicationContext())
                 .setSmallIcon(R.drawable.icon)
                 .setAutoCancel(true)
                 .setContentTitle( getString( R.string.app_name ) )
@@ -322,7 +325,9 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     private RemoteViews getExpandedView( boolean isPlaying ) {
         RemoteViews customView = new RemoteViews(this.getPackageName(), R.layout.notification);
         String thumbNailUri = thisTrack.album.images.get(thisTrack.album.images.size() - 1).url;
-        customView.setImageViewUri(R.id.notification_icon, Uri.parse(thumbNailUri));
+        Picasso.with(AudioService.this)
+                .load(thumbNailUri)
+                .into(customView, R.id.notification_icon, NOTIFICATION_ID, notification);
         customView.setTextViewText(R.id.notification_textview, getTrackName());
         if( isPlaying )
             customView.setImageViewResource( R.id.notification_play_pause, R.drawable.ic_pause );
