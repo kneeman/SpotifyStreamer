@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 
+import com.knee.spotifystreamer.bus.DialogMessage;
 import com.knee.spotifystreamer.model.ParceableArtist;
 import com.knee.spotifystreamer.model.TopTracksState;
 import com.squareup.otto.Subscribe;
@@ -45,4 +46,10 @@ public class TopTracksActivity extends ParentActivity {
     @Subscribe
     //Below method cannot be moved to super class, limitation of Otto
     public void handleTrackSelected(TopTracksState pTrack){ showDialog(pTrack);}
+
+    @Subscribe
+    //Below method cannot be moved to super class, limitation of Otto
+    public void handleDialogMessage(DialogMessage pMessage){
+        handleDialogMessageSuper(pMessage);
+    }
 }

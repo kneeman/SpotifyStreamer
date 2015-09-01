@@ -316,6 +316,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     private void moveTracks(int toTrack){
+        mListener.trackChanging();
         topTracksState.setCurrentlyPlaying(true);
         setTrack(toTrack);
         haltPlayback();
@@ -384,6 +385,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     public interface AudioStatusListener{
         public void sendStatusUpdate(AudioStatus playing);
         public void trackChanged(int newTrack);
+        public void trackChanging();
     }
 
     public interface OnServiceConnectedListener{

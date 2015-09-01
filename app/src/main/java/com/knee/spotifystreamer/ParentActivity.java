@@ -1,5 +1,6 @@
 package com.knee.spotifystreamer;
 
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NavUtils;
@@ -10,6 +11,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.knee.spotifystreamer.bus.BusProvider;
+import com.knee.spotifystreamer.bus.DialogMessage;
 import com.knee.spotifystreamer.model.TopTracksState;
 import com.knee.spotifystreamer.utils.Utils;
 
@@ -20,8 +22,10 @@ public class ParentActivity extends ActionBarActivity {
 
     protected boolean mTwoPane;
     public static final String KEY_SHARED_PREFS = "keySharedPrefs";
+    private static final String TAG_FRAGMENT_PLAYER = "fragment_tag_player";
     public static final String KEY_COUNTRY_MAP = "country";
     private Spinner countrySpinner;
+    protected PlayerDialogFragment newFragment;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -64,21 +68,38 @@ public class ParentActivity extends ActionBarActivity {
     protected void showDialog(TopTracksState pTrack) {
         if(Utils.isNetworkConnected(this)) {
             FragmentManager fragmentManager = getSupportFragmentManager();
-            PlayerDialogFragment newFragment = PlayerDialogFragment.newInstance(pTrack);
+            newFragment = PlayerDialogFragment.newInstance(pTrack);
             if (mTwoPane) {
-                newFragment.show(fragmentManager, "dialog");
+                newFragment.show(fragmentManager, TAG_FRAGMENT_PLAYER);
             } else {
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
                 //Transition animation
                 transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 // To make it fullscreen, use the 'content' root view as the container
                 // for the fragment, which is always the root view for the activity
-                transaction.replace(android.R.id.content, newFragment, "fragmentPlayerDialogFragment")
+                transaction.replace(android.R.id.content, newFragment, TAG_FRAGMENT_PLAYER)
                 .addToBackStack(null)
                 .commit();
             }
         }else{
             Toast.makeText(this, getString(R.string.network_unavailable), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    protected void handleDialogMessageSuper(DialogMessage pDialogMessage){
+        if(pDialogMessage.getDialogAction().equals(DialogMessage.DialogAction.DISMISS)){
+            removePlayerDialog();
+        }
+    }
+    protected void removePlayerDialog(){
+        if(mTwoPane){
+            if (newFragment != null) {
+                newFragment.dismiss();
+            }
+        }else{
+            Fragment fragment = getSupportFragmentManager().findFragmentByTag(TAG_FRAGMENT_PLAYER);
+            if(fragment != null)
+                getSupportFragmentManager().beginTransaction().remove(fragment).commit();
         }
     }
 }

@@ -26,6 +26,6 @@ public class DialogMessage {
 	}
 	
 	public enum DialogAction{
-		START, STOP;
+		START, STOP, DISMISS;
 	}
 }

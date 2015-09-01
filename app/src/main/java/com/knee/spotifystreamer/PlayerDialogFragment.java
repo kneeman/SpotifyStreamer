@@ -20,6 +20,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+import com.knee.spotifystreamer.bus.BusProvider;
+import com.knee.spotifystreamer.bus.DialogMessage;
 import com.knee.spotifystreamer.model.TopTracksState;
 import com.knee.spotifystreamer.service.AudioService;
 import com.knee.spotifystreamer.service.AudioService.AudioStatus;
@@ -49,12 +51,13 @@ public class PlayerDialogFragment extends DialogFragment{
     private Intent musicServiceIntent;
     private View fullPlayerView;
     private Handler seekbarUpdateHandler = new Handler();
-    private Runnable run = new Runnable() {
+    private Runnable runSeeker = new Runnable() {
         @Override
         public void run() {
             updateSeeker();
         }
     };
+    private boolean trackChanging;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -111,9 +114,14 @@ public class PlayerDialogFragment extends DialogFragment{
     }
 
     private void updateSeeker(){
-        if(mService.get() != null) {
-            mSeekBar.setProgress(mService.get().getPosition());
-            seekbarUpdateHandler.postDelayed(run, 1000);
+        int interval = 500;
+        if(mService != null && mService.get() != null) {
+            if((mService.get().getPosition() + interval) < mService.get().getDuration()) {
+                mSeekBar.setProgress(mService.get().getPosition());
+                seekbarUpdateHandler.postDelayed(runSeeker, interval);
+            }else{
+                mSeekBar.setProgress(mService.get().getDuration());
+            }
         }
     }
 
@@ -179,10 +187,34 @@ public class PlayerDialogFragment extends DialogFragment{
         populateImage(thisTrack.album.images.get(0).url);
     }
 
+
     private void setSeekbar(){
+        long duration = (long) mService.get().getDuration();
+        mRightTrackTime.setText(String.format("%d:%d",
+                TimeUnit.MILLISECONDS.toMinutes(duration),
+                TimeUnit.MILLISECONDS.toSeconds(duration) -
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))));
         if(mService != null && mService.get() != null){
             mSeekBar.setMax(mService.get().getDuration());
-            seekbarUpdateHandler.postDelayed(run, 100);
+            mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    if (fromUser) {
+                        if (mService != null && mService.get() != null) {
+                            mService.get().seek(progress);
+                        }
+                    }
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                }
+            });
+            seekbarUpdateHandler.postDelayed(runSeeker, 100);
         }
     }
 
@@ -228,14 +260,24 @@ public class PlayerDialogFragment extends DialogFragment{
 //
 //    }
 
+    private void trackChanging() {
+        trackChanging = true;
+    }
+
     private void handleTrackChanged(int newTrack) {
         topTracksState.setSelectedTrack(newTrack);
         //fullPlayerView.invalidate();
         populateControls();
     }
 
-    private ServiceConnection mConnection = new ServiceConnection() {
+    private void handleTrackEnded() {
+        if(mSeekBar != null) {
+            mSeekBar.setProgress(mSeekBar.getMax());
+        }
+        BusProvider.getInstance().post(new DialogMessage(null, null, DialogMessage.DialogAction.DISMISS));
+    }
 
+    private ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
@@ -253,6 +295,11 @@ public class PlayerDialogFragment extends DialogFragment{
                     PlayerDialogFragment.this.handleTrackChanged(newTrack);
                 }
 
+                @Override
+                public void trackChanging() {
+                    PlayerDialogFragment.this.trackChanging();
+                }
+
             });
             mBound = true;
             attachButtonListeners();
@@ -263,6 +310,12 @@ public class PlayerDialogFragment extends DialogFragment{
         public void onServiceDisconnected(ComponentName arg0) {
             mService = null;
             mBound = false;
+            seekbarUpdateHandler.removeCallbacksAndMessages(null);
+            if(!trackChanging){
+                BusProvider.getInstance().post(new DialogMessage(null, null, DialogMessage.DialogAction.DISMISS));
+            }else{
+                trackChanging = false;
+            }
         }
     };
 }
