@@ -25,6 +25,11 @@ import java.util.Map;
 
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
+import rx.Observable;
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 
 /**
@@ -68,8 +73,46 @@ public class TopTracksActivityFragment extends Fragment {
             progressDialog = ProgressDialog.show(getActivity(),
                     getString(R.string.please_wait_title),
                     getString(R.string.please_wait_tracks));
-            TopTracksTask topTracksTask = new TopTracksTask();
-            topTracksTask.execute(artistId);
+//            TopTracksTask topTracksTask = new TopTracksTask();
+//            topTracksTask.execute(artistId);
+
+            Observable.just(artistId)
+                    .map(new Func1<String,Tracks>() {
+                        @Override
+                        public Tracks call(String pArtistId) {
+                            Map<String, Object> map = new HashMap<>();
+                            map.put(COUNTRY_MAP_KEY, Locale.getDefault().getCountry());
+                            Tracks results = SpotifyServiceSingleton.getInstance().getArtistTopTrack(pArtistId, map);
+                            return results;
+                        }
+                    })
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Observer<Tracks>() {
+                        @Override
+                        public void onCompleted() {}
+                        @Override
+                        public void onError(Throwable e) {}
+                        @Override
+                        public void onNext(Tracks pTracks) {
+                            progressDialog.dismiss();
+                            List<Track> tracks = pTracks.tracks;
+                            if(tracks.size() == 0){
+                                Toast.makeText(getActivity(), getActivity().getString(R.string.no_tracks_found), Toast.LENGTH_LONG).show();
+                            }else{
+                                if(mTracks != null && mTracks.size() > 0) {
+                                    mTracks.clear();
+                                }
+                                for(Track thisTrack: tracks){
+                                    ParceableTrack pa = new ParceableTrack(thisTrack);
+                                    mTracks.add(pa);
+                                }
+                                if(mAdapter != null) {
+                                    mAdapter.swapList(mTracks);
+                                }
+                            }
+                        }
+                    });
         }
         return rootView;
     }
