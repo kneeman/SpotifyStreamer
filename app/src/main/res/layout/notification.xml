@@ -10,15 +10,28 @@
 		android:scaleType="centerCrop"
 		android:layout_alignParentLeft="true"
 		android:layout_alignParentStart="true"
-		android:layout_alignParentBottom="true"
 		android:layout_margin="10dp"
 		android:src="@drawable/icon"/>
+	<TextView
+		android:id="@+id/notification_textview"
+		android:maxLines="1"
+		android:ellipsize="marquee"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="@string/app_name"
+		android:textColor="@android:color/black"
+		android:textSize="@dimen/notification_text_size"
+		android:textStyle="bold"
+		android:layout_toRightOf="@+id/notification_icon"
+		android:layout_toEndOf="@id/notification_icon"
+		android:layout_marginTop="10dp"
+		android:layout_marginBottom="10dp"
+		android:gravity="center_horizontal"/>
 	<LinearLayout
 		android:id="@+id/buttons_row"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_alignParentBottom="true"
-		android:layout_toRightOf="@id/notification_icon"
+		android:layout_below="@id/notification_textview"
 		android:layout_toEndOf="@id/notification_icon"
 		android:orientation="horizontal">
 		<ImageButton
@@ -70,20 +83,5 @@
 			android:contentDescription="@string/cont_desc_next"
 			android:src="@android:drawable/ic_media_next" />
 	</LinearLayout>
-	<TextView
-	    android:id="@+id/notification_textview"
-	    android:maxLines="1"
-	    android:ellipsize="marquee"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:text="@string/app_name"
-		android:textColor="@android:color/black"
-		android:textSize="@dimen/notification_text_size"
-		android:textStyle="bold"
-		android:layout_toRightOf="@+id/notification_icon"
-		android:layout_toEndOf="@id/notification_icon"
-		android:layout_marginBottom="10dp"
-		android:gravity="center_horizontal"
-		android:layout_above="@+id/buttons_row"/>
 
 </RelativeLayout>

@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
@@ -32,6 +31,10 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeUnit;
 
 import kaaes.spotify.webapi.android.models.Track;
+import rx.Observable;
+import rx.Observer;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
 
 /**
  * Created by c_cknee on 8/5/2015.
@@ -50,14 +53,29 @@ public class PlayerDialogFragment extends DialogFragment{
     private AudioService.OnServiceConnectedListener mServiceListener;
     private Intent musicServiceIntent;
     private View fullPlayerView;
-    private Handler seekbarUpdateHandler = new Handler();
-    private Runnable runSeeker = new Runnable() {
+//  private Handler seekbarUpdateHandler = new Handler();
+//    private Runnable runSeeker = new Runnable() {
+//        @Override
+//        public void run() {
+//            updateSeeker();
+//        }
+//    };
+    private boolean trackChanging;
+    private final int TIMER_SEEKBAR_INTERVAL = 100;
+    private final Observable timerObservable = Observable.interval(TIMER_SEEKBAR_INTERVAL, TimeUnit.MILLISECONDS)
+            .observeOn(AndroidSchedulers.mainThread());
+    private final Observer<Long> timerObserver = new Observer<Long>() {
         @Override
-        public void run() {
+        public void onCompleted() {}
+        @Override
+        public void onError(Throwable e) {}
+        @Override
+        public void onNext(Long aLong) {
             updateSeeker();
         }
     };
-    private boolean trackChanging;
+    private Subscription timerSubscription;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -114,14 +132,17 @@ public class PlayerDialogFragment extends DialogFragment{
     }
 
     private void updateSeeker(){
-        int interval = 500;
-        if(mService != null && mService.get() != null) {
-            if((mService.get().getPosition() + interval) < mService.get().getDuration()) {
-                mSeekBar.setProgress(mService.get().getPosition());
-                seekbarUpdateHandler.postDelayed(runSeeker, interval);
-            }else{
-                mSeekBar.setProgress(mService.get().getDuration());
-            }
+//        int interval = 500;
+//        if(mService != null && mService.get() != null) {
+//            if((mService.get().getPosition() + interval) < mService.get().getDuration()) {
+//                mSeekBar.setProgress(mService.get().getPosition());
+//                seekbarUpdateHandler.postDelayed(runSeeker, interval);
+//            }else{
+//                mSeekBar.setProgress(mService.get().getDuration());
+//            }
+//        }
+        if(mService != null && mSeekBar != null){
+            mSeekBar.setProgress(mService.get().getPosition());
         }
     }
 
@@ -158,6 +179,12 @@ public class PlayerDialogFragment extends DialogFragment{
             @Override
             public void onClick(View v) {
                 mService.get().skipForward();
+            }
+        });
+        mNextTrackButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mService.get().playNext();
             }
         });
 
@@ -214,8 +241,9 @@ public class PlayerDialogFragment extends DialogFragment{
                 public void onStopTrackingTouch(SeekBar seekBar) {
                 }
             });
-            seekbarUpdateHandler.postDelayed(runSeeker, 100);
+//            seekbarUpdateHandler.postDelayed(runSeeker, 100);
         }
+        timerSubscription = timerObservable.subscribe(timerObserver);
     }
 
     private void populateImage(String pUrlString){
@@ -310,7 +338,13 @@ public class PlayerDialogFragment extends DialogFragment{
         public void onServiceDisconnected(ComponentName arg0) {
             mService = null;
             mBound = false;
-            seekbarUpdateHandler.removeCallbacksAndMessages(null);
+            //seekbarUpdateHandler.removeCallbacksAndMessages(null);
+            if(mSeekBar != null) {
+                mSeekBar.setProgress(mSeekBar.getMax());
+            }
+            if(timerSubscription != null && !timerSubscription.isUnsubscribed()){
+                timerSubscription.unsubscribe();
+            }
             if(!trackChanging){
                 BusProvider.getInstance().post(new DialogMessage(null, null, DialogMessage.DialogAction.DISMISS));
             }else{

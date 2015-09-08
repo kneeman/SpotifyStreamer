@@ -102,6 +102,9 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     private void createPlayer() {
+        if(mPlayer != null){
+            mPlayer.stop();
+        }
         mPlayer = new MediaPlayer();
         wifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE))
                 .createWifiLock(WifiManager.WIFI_MODE_FULL, "spotifyStreamerLock");
@@ -289,7 +292,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
 
     private void showNotification( boolean isPlaying ) {
         notification = new Notification.Builder(getApplicationContext())
-                .setSmallIcon(R.drawable.icon)
+                .setSmallIcon(R.drawable.spot_stream)
                 .setAutoCancel(true)
                 .setContentTitle( getString( R.string.app_name ) )
                 .setPriority(Notification.PRIORITY_MAX)
