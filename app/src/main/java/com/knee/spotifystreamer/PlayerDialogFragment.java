@@ -81,6 +81,7 @@ public class PlayerDialogFragment extends DialogFragment{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         gson = new Gson();
+        setRetainInstance(true);
         if(savedInstanceState != null){
             topTracksState = gson.fromJson(savedInstanceState.getString(KEY_TOP_TRACKS_STATE), TopTracksState.class);
         }
@@ -223,6 +224,7 @@ public class PlayerDialogFragment extends DialogFragment{
                         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))));
         if(mService != null && mService.get() != null){
             mSeekBar.setMax(mService.get().getDuration());
+            mSeekBar.setProgress(mService.get().getPosition());
             mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
