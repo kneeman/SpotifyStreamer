@@ -73,6 +73,61 @@ public class MainActivityFragment extends Fragment {
         mAdapter = new ArtistAdapter(getActivity(),mArtists);
         mRecyclerView.setAdapter(mAdapter);
         mEditTextArtist = (EditText) rootView.findViewById(R.id.edit_text_artist_search);
+//        RxTextView.editorActionEvents(mEditTextArtist)
+//                .filter(new Func1<TextViewEditorActionEvent, Boolean>() {
+//                    @Override
+//                    public Boolean call(TextViewEditorActionEvent textViewEditorActionEvent) {
+//                        return textViewEditorActionEvent.actionId() == EditorInfo.IME_ACTION_SEND;
+//                    }
+//                }).filter(new Func1<TextViewEditorActionEvent, Boolean>() {
+//            @Override
+//            public Boolean call(TextViewEditorActionEvent textViewEditorActionEvent) {
+//                return mEditTextArtist.getText().length() >= 2;
+//            }
+//        })
+//            .switchOnNext(Observable.just("foo")
+//                    .map(new Func1<String, Tracks>() {
+//                        @Override
+//                        public Tracks call(String pArtistId) {
+//                            Map<String, Object> map = new HashMap<>();
+//                            map.put(COUNTRY_MAP_KEY, Locale.getDefault().getCountry());
+//                            Tracks results = SpotifyServiceSingleton.getInstance().getArtistTopTrack(pArtistId, map);
+//                            return results;
+//                        }
+//                    })
+//                    .subscribeOn(Schedulers.io())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe(new Observer<Tracks>() {
+//                        @Override
+//                        public void onCompleted() {
+//                        }
+//
+//                        @Override
+//                        public void onError(Throwable e) {
+//                        }
+//
+//                        @Override
+//                        public void onNext(Tracks pTracks) {
+//                            progressDialog.dismiss();
+//                            List<Track> tracks = pTracks.tracks;
+//                            if (tracks.size() == 0) {
+//                                Toast.makeText(getActivity(), getActivity().getString(R.string.no_tracks_found), Toast.LENGTH_LONG).show();
+//                            } else {
+//                                if (mTracks != null && mTracks.size() > 0) {
+//                                    mTracks.clear();
+//                                }
+//                                for (Track thisTrack : tracks) {
+//                                    ParceableTrack pa = new ParceableTrack(thisTrack);
+//                                    mTracks.add(pa);
+//                                }
+//                                if (mAdapter != null) {
+//                                    mAdapter.swapList(mTracks);
+//                                }
+//                            }
+//                        }
+//                    });
+
+
         mEditTextArtist.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
