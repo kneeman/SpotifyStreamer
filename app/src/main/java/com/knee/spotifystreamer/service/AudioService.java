@@ -318,6 +318,10 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
         return topTracksState.getSelectedTrack();
     }
 
+    public static Intent getBaseIntent(Context context){
+        return new Intent(context, AudioService.class);
+    }
+
     private void moveTracks(int toTrack){
         mListener.trackChanging();
         topTracksState.setCurrentlyPlaying(true);

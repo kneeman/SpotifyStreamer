@@ -8,6 +8,7 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +42,7 @@ import rx.android.schedulers.AndroidSchedulers;
  */
 public class PlayerDialogFragment extends DialogFragment{
 
+    public final static String TAG = PlayerDialogFragment.class.getSimpleName();
     private TopTracksState topTracksState;
     public static final String KEY_TOP_TRACKS_STATE = "keyTopTracksState";
     private TextView mArtistName, mAlbumName, mTrackName, mLeftTrackTime, mRightTrackTime;
@@ -52,7 +54,6 @@ public class PlayerDialogFragment extends DialogFragment{
     private boolean mBound = false;
     private AudioService.OnServiceConnectedListener mServiceListener;
     private Intent musicServiceIntent;
-    private View fullPlayerView;
 //  private Handler seekbarUpdateHandler = new Handler();
 //    private Runnable runSeeker = new Runnable() {
 //        @Override
@@ -90,6 +91,8 @@ public class PlayerDialogFragment extends DialogFragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.i(TAG, "onCreateView entered");
+
         View view  = inflater.inflate(R.layout.fragment_track_player, container, false);
         bindControls(view);
         if(savedInstanceState == null) {
@@ -97,21 +100,31 @@ public class PlayerDialogFragment extends DialogFragment{
             topTracksState = gson.fromJson(arguments.getString(KEY_TOP_TRACKS_STATE), TopTracksState.class);
         }
         populateControls();
-        musicServiceIntent = new Intent(getActivity(), AudioService.class);
-        musicServiceIntent.setAction(AudioService.ACTION_SETUP);
-        musicServiceIntent.putExtra(KEY_TOP_TRACKS_STATE,
-                gson.toJson(topTracksState));
-        getActivity().bindService(musicServiceIntent, mConnection, Context.BIND_ABOVE_CLIENT);
-        getActivity().startService(musicServiceIntent);
-        fullPlayerView = view;
+        if(savedInstanceState == null) {
+            musicServiceIntent = AudioService.getBaseIntent(getActivity().getApplicationContext());
+            musicServiceIntent.setAction(AudioService.ACTION_SETUP);
+            musicServiceIntent.putExtra(KEY_TOP_TRACKS_STATE,
+                    gson.toJson(topTracksState));
+            getActivity().getApplicationContext().bindService(musicServiceIntent, mConnection, Context.BIND_ABOVE_CLIENT);
+            getActivity().getApplicationContext().startService(musicServiceIntent);
+        }else{
+            setSeekbar();
+            attachButtonListeners();
+            Log.i(TAG, "");
+        }
+
         return view;
     }
 
-
-
+    @Override
+    public void onDestroy() {
+        mConnection = null;
+        super.onDestroy();
+    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreateDialog entered");
         Dialog dialog = super.onCreateDialog(savedInstanceState);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         return dialog;
@@ -128,6 +141,7 @@ public class PlayerDialogFragment extends DialogFragment{
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        Log.i(TAG, "onSaveInstanceState entered");
         super.onSaveInstanceState(outState);
         outState.putString(KEY_TOP_TRACKS_STATE, gson.toJson(topTracksState));
     }
@@ -148,6 +162,8 @@ public class PlayerDialogFragment extends DialogFragment{
     }
 
     private void bindControls(View view) {
+        Log.i(TAG, "onBindControls entered");
+
         mArtistName = (TextView) view.findViewById(R.id.track_group_name);
         mAlbumName =  (TextView) view.findViewById(R.id.track_album_name);
         mTrackName = (TextView) view.findViewById(R.id.track_track_name);
@@ -164,6 +180,8 @@ public class PlayerDialogFragment extends DialogFragment{
     }
 
     private void attachButtonListeners(){
+        Log.i(TAG, "attachButtonListeners entered");
+
         mPlayPauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -198,6 +216,8 @@ public class PlayerDialogFragment extends DialogFragment{
     }
 
     private void populateControls() {
+        Log.i(TAG, "populateControls entered");
+
         Track thisTrack = topTracksState.getTracks().get(topTracksState.getSelectedTrack());
         //TODO need to replace zero with the actual original artist searched for.  Probably need to add
         //to model
@@ -215,8 +235,8 @@ public class PlayerDialogFragment extends DialogFragment{
         populateImage(thisTrack.album.images.get(0).url);
     }
 
-
     private void setSeekbar(){
+        Log.i(TAG, "setSeekbar entered");
         long duration = (long) mService.get().getDuration();
         mRightTrackTime.setText(String.format("%d:%d",
                 TimeUnit.MILLISECONDS.toMinutes(duration),
@@ -311,6 +331,7 @@ public class PlayerDialogFragment extends DialogFragment{
         @Override
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
+            Log.i(TAG, "onServiceConnected entered");
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             LocalBinder binder = (LocalBinder) service;
             mService = binder.getService();
@@ -334,10 +355,10 @@ public class PlayerDialogFragment extends DialogFragment{
             mBound = true;
             attachButtonListeners();
             //mServiceListener.onAudioServiceConnected(musicServiceIntent);
-            musicServiceIntent = null;
         }
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
+            Log.i(TAG, "onServiceDisconnected entered");
             mService = null;
             mBound = false;
             //seekbarUpdateHandler.removeCallbacksAndMessages(null);
