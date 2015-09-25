@@ -110,7 +110,6 @@ public class PlayerDialogFragment extends DialogFragment{
         }else{
             setSeekbar();
             attachButtonListeners();
-            Log.i(TAG, "");
         }
 
         return view;
@@ -124,7 +123,6 @@ public class PlayerDialogFragment extends DialogFragment{
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Log.i(TAG, "onCreateDialog entered");
         Dialog dialog = super.onCreateDialog(savedInstanceState);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         return dialog;
@@ -316,7 +314,7 @@ public class PlayerDialogFragment extends DialogFragment{
 
     private void handleTrackChanged(int newTrack) {
         topTracksState.setSelectedTrack(newTrack);
-        //fullPlayerView.invalidate();
+        updateTrackPlaying();
         populateControls();
     }
 
@@ -325,6 +323,11 @@ public class PlayerDialogFragment extends DialogFragment{
             mSeekBar.setProgress(mSeekBar.getMax());
         }
         BusProvider.getInstance().post(new DialogMessage(null, null, DialogMessage.DialogAction.DISMISS));
+    }
+
+
+    private void updateTrackPlaying() {
+        BusProvider.getInstance().post(topTracksState);
     }
 
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -354,14 +357,19 @@ public class PlayerDialogFragment extends DialogFragment{
             });
             mBound = true;
             attachButtonListeners();
+            if(topTracksState != null){
+                topTracksState.setCurrentlyPlaying(true);
+            }
+            updateTrackPlaying();
             //mServiceListener.onAudioServiceConnected(musicServiceIntent);
         }
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             Log.i(TAG, "onServiceDisconnected entered");
+            topTracksState.setCurrentlyPlaying(false);
+            BusProvider.getInstance().post(topTracksState);
             mService = null;
             mBound = false;
-            //seekbarUpdateHandler.removeCallbacksAndMessages(null);
             if(mSeekBar != null) {
                 mSeekBar.setProgress(mSeekBar.getMax());
             }

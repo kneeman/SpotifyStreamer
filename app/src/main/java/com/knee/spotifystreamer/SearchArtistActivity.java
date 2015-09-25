@@ -6,8 +6,8 @@ import android.support.v4.app.FragmentManager;
 import android.widget.Toast;
 
 import com.knee.spotifystreamer.bus.DialogMessage;
-import com.knee.spotifystreamer.model.TopTracksState;
 import com.knee.spotifystreamer.model.ParceableArtist;
+import com.knee.spotifystreamer.model.TopTracksState;
 import com.knee.spotifystreamer.utils.Utils;
 import com.squareup.otto.Subscribe;
 
@@ -45,9 +45,13 @@ public class SearchArtistActivity extends ParentActivity {
 
     @Subscribe
     //Below method cannot be moved to super class, limitation of Otto
-    public void handleTrackSelected(TopTracksState pTrack){ showDialog(pTrack);}
+    public void handleTrackSelected(TopTracksState pTrack){
+        super.setTopTracksState(pTrack);
+        showDialog(pTrack);
+    }
 
     @Subscribe
     //Below method cannot be moved to super class, limitation of Otto
-    public void handleDialogMessage(DialogMessage pMessage){ handleDialogMessageSuper(pMessage);}
+    public void handleDialogMessage(DialogMessage pMessage) {
+        handleDialogMessageSuper(pMessage);}
 }

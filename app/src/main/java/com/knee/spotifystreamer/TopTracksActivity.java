@@ -45,7 +45,10 @@ public class TopTracksActivity extends ParentActivity {
 
     @Subscribe
     //Below method cannot be moved to super class, limitation of Otto
-    public void handleTrackSelected(TopTracksState pTrack){ showDialog(pTrack);}
+    public void handleTrackSelected(TopTracksState pTrack){
+        super.setTopTracksState(pTrack);
+        showDialog(pTrack);
+    }
 
     @Subscribe
     //Below method cannot be moved to super class, limitation of Otto

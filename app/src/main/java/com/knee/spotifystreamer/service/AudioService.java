@@ -183,32 +183,6 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
                 break;
 
         }
-//        if( intent != null && intent.getAction() != null ) {
-//            String actionPassed = intent.getAction();
-//            if( actionPassed.equalsIgnoreCase( ACTION_NOTIFICATION_PLAY_PAUSE)
-//                    || actionPassed.equalsIgnoreCase(ACTION_PLAY_PAUSE)) {
-//                playPause();
-//            } else if( actionPassed.equalsIgnoreCase( ACTION_NOTIFICATION_FAST_FORWARD ) ) {
-//                skipForward();
-//            } else if( actionPassed.equalsIgnoreCase( ACTION_NOTIFICATION_REWIND ) ) {
-//                skipBack();
-//            } else if (actionPassed.equalsIgnoreCase( ACTION_NOTIFICATION_STOP )){
-//                stop();
-//            }
-//            if(actionPassed.contains(NOTIFICATION_SEARCH_VALUE)){
-//                if(mListener != null){
-//                    if(actionPassed.equals(ACTION_NOTIFICATION_PLAY_PAUSE)){
-//                        if(mIsPlaying){
-//                            mListener.sendStatusUpdate(AudioStatus.PLAYING);
-//                        }else{
-//                            mListener.sendStatusUpdate(AudioStatus.PAUSED);
-//                        }
-//                    }else{
-//                        mListener.sendStatusUpdate(AudioStatus.CHANGED);
-//                    }
-//                }
-//            }
-//        }
     }
 
 
@@ -303,6 +277,9 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
             //TODO implement ICS handling with relaunch of activity if currently playing.  Otherwise
             //maybe launch generic audio player.  Not sure.
         }
+//        if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ){
+//            notification.visibility = Notification.VISIBILITY_PUBLIC;
+//        }
         // Put this Service in a foreground state, so it won't be killed
         startForeground(NOTIFICATION_ID, notification);
         manager = (NotificationManager) getSystemService( Context.NOTIFICATION_SERVICE );

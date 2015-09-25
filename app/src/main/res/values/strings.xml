@@ -23,4 +23,5 @@
     <string name="cont_desc_next">Next</string>
     <string name="enter_country_code">Select Country Code:</string>
     <string name="confirm_country_code_changed">Country code has been changed to:</string>
+    <string name="action_now_playing">Now Playing</string>
 </resources>
